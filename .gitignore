@@ -20,3 +20,6 @@ plugins/
 dbt_project/target/
 dbt_project/dbt_packages/
 dbt_project/logs/
+
+# Airflow generated config
+config/airflow.cfg
