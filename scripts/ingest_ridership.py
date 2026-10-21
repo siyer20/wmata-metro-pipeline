@@ -6,7 +6,7 @@ import time
 #link below points at an ArcGIS Feature Service layer
 BASE_URL = (
     "https://maps2.dcgis.dc.gov/dcgis/rest/services/"
-    "DCGIS_APPS/WMATA_Rail_Ridership/MapServer/7/query"
+    "DCGIS_APPS/WMATA_Rail_Ridership/MapServer/9/query"
 )
 PAGE_SIZE = 1000
 DB_PATH = "data/wmata.duckdb"
@@ -66,8 +66,9 @@ def ingest():
         offset += PAGE_SIZE
 
         #pausing between reqs for api rate limit
-        time.sleep(0.5)  
+        time.sleep(0.5)
 
+    #guard against loading empty databases
     if not all_rows:
         raise RuntimeError("No rows fetched from API — check outFields and query parameters")
 
