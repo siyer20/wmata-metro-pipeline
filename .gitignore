@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data & DuckDB
+data/
+*.duckdb
+*.duckdb.wal
+
+# Environment variables (contains WMATA API key)
+.env
+
+# Airflow
+logs/
+plugins/
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
