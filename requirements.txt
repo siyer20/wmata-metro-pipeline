@@ -2,3 +2,4 @@ duckdb
 requests
 pandas
 pytz
+dbt-duckdb
