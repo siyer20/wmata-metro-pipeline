@@ -12,7 +12,7 @@ PAGE_SIZE = 1000
 DB_PATH = "data/wmata.duckdb"
 TABLE_NAME = "raw_ridership"
 
-def fetch_page(offset):
+def fetch_page(offset, retries=3):
     params = {
         #1=1 matches every row so returns everything
         "where": "1=1",
@@ -33,15 +33,28 @@ def fetch_page(offset):
         "resultRecordCount": PAGE_SIZE, 
     }
 
-    #sends request with outlined parameters
-    resp = requests.get(BASE_URL, params=params, timeout=30)
+    #retry up to 3 times
+    for attempt in range(retries):
+        try: #catches only timeout errors
+            #sends request with outlined parameters
+            resp = requests.get(BASE_URL, params=params, timeout=60) #timeout changed from 30->60
 
-    #'fail fast and loudly' segment to allow for easy problem diagnosis
-    resp.raise_for_status()
-    data = resp.json()
-    if "features" not in data:
-        raise RuntimeError(f"Unexpected API response: {data}")
-    return [f["attributes"] for f in data["features"]]
+            #'fail fast and loudly' segment to allow for easy problem diagnosis
+            resp.raise_for_status()
+            data = resp.json()
+            if "features" not in data:
+                raise RuntimeError(f"Unexpected API response: {data}")
+            return [f["attributes"] for f in data["features"]]
+        except requests.exceptions.Timeout:
+            #on final attempt, raise timeout error instead of failing quietly
+            if attempt == retries - 1:
+                raise
+            #logs each retry
+            print(f"  Timeout on offset {offset}, retrying ({attempt + 1}/{retries})...")
+
+            #wait 5 seconds between tries to give server time to catch up
+            time.sleep(5)
+
 
 
 def ingest():
