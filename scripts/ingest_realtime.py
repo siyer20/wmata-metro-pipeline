@@ -3,6 +3,7 @@ import requests
 import duckdb
 import pandas as pd
 from datetime import datetime, timezone
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load .env from the repo root, regardless of the current working directory
