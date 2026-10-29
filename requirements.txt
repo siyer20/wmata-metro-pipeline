@@ -3,3 +3,4 @@ requests
 pandas
 pytz
 dbt-duckdb
+python-dotenv

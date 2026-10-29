@@ -3,6 +3,10 @@ import requests
 import duckdb
 import pandas as pd
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+
+# Load .env from the repo root, regardless of the current working directory
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 API_KEY = os.environ["WMATA_API_KEY"]
 
