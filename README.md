@@ -151,17 +151,48 @@ docker compose up -d
 
 ---
 
-## Known limitations and engineering decisions
+## Known Limitations and Engineering Decisions
 
-- **DC GIS API reliability.** The historical ridership source (`maps2.dcgis.dc.gov`) is a public ArcGIS service that intermittently times out under load. `scripts/ingest_ridership.py` handles this with a 60-second request timeout and up to 3 retries with a 5-second pause between attempts. If all retries fail, the script raises the original timeout error rather than silently returning partial data.
+**DC GIS API reliability.** The historical ridership source (maps2.dcgis.dc.gov)
+is a public ArcGIS service that intermittently times out under load.
+`scripts/ingest_ridership.py` handles this with a 60-second request timeout and
+up to 3 retries with a 5-second pause between attempts. If all retries fail, the
+script raises the original timeout error rather than silently returning partial
+data.
 
-- **Archive layer selection.** The primary archive layer (ID 7) returned zero records when queried. The pipeline targets the active archive layer (ID 9), which contains the same fields and is populated.
+**Partial ridership coverage.** The service exposes two ridership layers. Layer 7
+("WMATA Rail Ridership Archive") is the full archive and shares the schema this
+pipeline targets, but it currently returns zero records. Layer 9, the one this
+pipeline ingests, is populated but is a Covid-era subset covering three stations
+(FARRAGUT NORTH, LENFANT PLAZA, UNION STATION) across ~187k snapshot rows
+(2020-02 to 2025-01). The staging and mart models are built against the schema,
+not the row count, so full coverage would flow through unchanged if layer 7 is
+populated — the only change required is the layer ID in `BASE_URL`
+(`/9/query` → `/7/query`). A complete system-wide alternative exists through the
+WMATA Ridership Data Portal, but it is manual-export only (no programmatic API)
+and reports average daily entries/exits rather than the snapshot-level time
+series this pipeline models, so it was left out of scope.
 
-- **Full refresh vs. append.** `raw_ridership` is rebuilt on every run because the source returns a complete archive — a new fetch supersedes the old one. `raw_realtime_predictions` is appended because each run is a distinct, immutable observation; full-refreshing would destroy the time series.
+**Pagination.** ArcGIS caps each response at its own record limit regardless of
+the requested page size, so the ingest advances its offset by the number of rows
+actually received, not by the requested page size, and stops only on an empty
+page. Requests are ordered by `OBJECTID` so offsets are stable across pages.
 
-- **Mixed-type column.** The `min` field in real-time predictions contains both integers and the strings `"ARR"` / `"BRD"`. Staging uses `TRY_CAST` to convert numeric values to integers (returning `NULL` otherwise) and preserves the string values in a separate `status` column.
+**Full refresh vs. append.** `raw_ridership` is rebuilt on every run because the
+source returns a complete archive — a new fetch supersedes the old one.
+`raw_realtime_predictions` is appended because each run is a distinct, immutable
+observation; full-refreshing would destroy the time series.
 
-- **Local scale.** The pipeline runs on a single machine with DuckDB. Scaling to substantially larger data volumes would mean moving to a cloud warehouse and distributed ingestion.
+**Mixed-type column.** The `min` field in realtime predictions contains both
+integers and the strings "ARR" / "BRD" / "---". Staging keeps the raw string as
+`min_raw` and adds `min_numeric` via `TRY_CAST`, which converts numeric values
+to integers and returns NULL for the non-numeric sentinels. Keeping both
+preserves the distinction between "arriving now" and "no prediction" rather than
+collapsing them into a single NULL.
+
+**Local scale.** The pipeline runs on a single machine with DuckDB. Scaling to
+substantially larger data volumes would mean moving to a cloud warehouse and
+distributed ingestion.
 
 ---
 
