@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: wmata
+    description: "Raw WMATA data loaded by scripts/ingest_ridership.py (full refresh) and scripts/ingest_realtime.py (append)."
+    schema: main   # raw tables live in the DuckDB 'main' schema
+    tables:
+      - name: raw_ridership
+        description: "WMATA Rail Ridership Archive (DC GIS ArcGIS REST, layer 9). Full refresh each run."
+      - name: raw_realtime_predictions
+        description: "WMATA StationPrediction/GetPrediction/All snapshots. Append-only, one row per train prediction per fetch."
