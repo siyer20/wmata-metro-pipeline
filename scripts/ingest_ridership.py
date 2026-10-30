@@ -8,7 +8,9 @@ BASE_URL = (
     "https://maps2.dcgis.dc.gov/dcgis/rest/services/"
     "DCGIS_APPS/WMATA_Rail_Ridership/MapServer/9/query"
 )
-PAGE_SIZE = 1000
+
+#request hint bc server caps at 1000
+PAGE_SIZE = 2000
 DB_PATH = "data/wmata.duckdb"
 TABLE_NAME = "raw_ridership"
 
@@ -31,6 +33,9 @@ def fetch_page(offset, retries=3):
         
         #how many rows per page (10000)
         "resultRecordCount": PAGE_SIZE, 
+
+        # Deterministic ordering so offsets don't overlap/skip across requests.
+        "orderByFields": "OBJECTID",
     }
 
     #retry up to 3 times
@@ -69,14 +74,12 @@ def ingest():
         #if api returns an empty page
         if not rows:
             break
+
         all_rows.extend(rows)
 
-        #if pg has <1000 rows, its the end of the data
-        if len(rows) < PAGE_SIZE:
-            break
-
-        #advance to next pg
-        offset += PAGE_SIZE
+        #advance by rows received
+        offset += len(rows)
+        print(f"  got {len(rows)} rows, total so far {len(all_rows)}")
 
         #pausing between reqs for api rate limit
         time.sleep(0.5)
