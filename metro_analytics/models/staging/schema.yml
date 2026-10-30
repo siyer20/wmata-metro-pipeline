@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_ridership
+    description: "Cleaned ridership snapshots: one row per station per snapshot time."
+    columns:
+      - name: station_name
+        description: "Station name from the ArcGIS ridership archive."
+        data_tests:
+          - not_null
+      - name: entries
+        description: "Cumulative entries at the snapshot."
+        data_tests:
+          - not_null
+      - name: exits
+        description: "Cumulative exits at the snapshot."
+        data_tests:
+          - not_null
+      - name: snapshot_at
+        description: "Snapshot timestamp, converted from the raw millisecond epoch."
+        data_tests:
+          - not_null
+
+  - name: stg_realtime
+    description: "Cleaned realtime predictions: one row per prediction per fetch."
+    columns:
+      - name: fetched_at
+        description: "UTC timestamp when the API was polled."
+        data_tests:
+          - not_null
+      - name: line
+        description: "WMATA line code."
+        data_tests:
+          - not_null
+      - name: location_code
+        description: "WMATA station code."
+        data_tests:
+          - not_null
+      - name: location_name
+        description: "Station name."
+        data_tests:
+          - not_null
+      - name: min_raw
+        description: "Raw minutes-to-arrival text, including ARR/BRD/--- sentinels."
+      - name: min_numeric
+        description: "Numeric minutes-to-arrival; non-numeric sentinels are NULL."
