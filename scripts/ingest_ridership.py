@@ -9,8 +9,8 @@ BASE_URL = (
     "DCGIS_APPS/WMATA_Rail_Ridership/MapServer/9/query"
 )
 
-#request hint bc server caps at 1000.
-PAGE_SIZE = 2000
+#page_size set to server's MaxRecordCount
+PAGE_SIZE = 1000
 DB_PATH = "data/wmata.duckdb"
 TABLE_NAME = "raw_ridership"
 
