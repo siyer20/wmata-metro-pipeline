@@ -9,3 +9,5 @@ sources:
         description: "WMATA Rail Ridership Archive (DC GIS ArcGIS REST, layer 9). Full refresh each run."
       - name: raw_realtime_predictions
         description: "WMATA StationPrediction/GetPrediction/All snapshots. Append-only, one row per train prediction per fetch."
+      - name: raw_stations
+        description: "WMATA station reference from DC GIS layer 6: one row per station (NAME, WMATA_NAME, LINE, GIS_ID). Full refresh each run."
