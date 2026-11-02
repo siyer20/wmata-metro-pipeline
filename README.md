@@ -174,12 +174,11 @@ and reports average daily entries/exits rather than the snapshot-level time
 series this pipeline models, so it was left out of scope.
 
 **Station dimension coverage.** `dim_stations` is built from DC GIS layer 6's
-98-station reference. Realtime location names that don't reconcile with layer 6
-after punctuation/case normalization are mapped through an explicit crosswalk
+98-station reference. Realtime location names that don't match layer 6 after punctuation/case normalization are mapped through an explicit crosswalk
 (10 pairs, each verified against the layer 6 reference). Three Silver Line
 stations (Loudon Gateway, NoMa-Gallaudet U, Vienna/Fairfax-GMU) are absent from
 layer 6's snapshot and are unioned in as `realtime_only` rows so their
-predictions still join. A `source` column distinguishes the two.
+predictions still join. A `source` column distinguishes the two. The crosswalk is currently duplicated in `dim_stations` and `fct_prediction_frequency`; it would move to a dbt seed if a third model needed it.
 
 **Pagination.** ArcGIS caps each response at its own record limit regardless of
 the requested page size, so the ingest advances its offset by the number of rows
